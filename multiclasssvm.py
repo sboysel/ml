@@ -5,7 +5,8 @@
 # 
 import numpy as np
 import pandas as pd
-from sklearn import datasets, svm, cross_validation
+from sklearn import svm, cross_validation, preprocessing
+#from sklearn import datasets
 
 #iris = datasets.load_iris()
 hip = pd.read_table( "http://astrostatistics.psu.edu/datasets/HIP_star.dat", delim_whitespace=True)
@@ -15,6 +16,9 @@ labelsHIP = hip["B-V"]
 
 featuresHIP_np = np.array(featuresHIP)
 labelsHIP_np = np.array(labelsHIP)
+
+featuresHIP_np_scaled = preprocessing.scale(featuresHIP_np)
+labelsHIP_np_scaled = preprocessing.scale(labelsHIP_np)
 
 #pred1 = clf.predict_proba(xTest)
 
