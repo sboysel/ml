@@ -1,0 +1,19 @@
+@relation hw5.1
+
+@attribute a1 numeric
+@attribute a2 numeric
+@attribute a3 numeric
+
+@data
+1,1,10
+1,10,1
+10,1,1
+0,2,9
+1,0,11
+0,9,0
+2,11,2
+9,0,1
+11,1,2
+1,0,9
+1,9,0
+11,1,0
