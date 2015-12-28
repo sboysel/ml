@@ -27,11 +27,11 @@ class EMCluster:
         self.w = {i: [] for i in range(k)}
         self.is_clustered = False
 
-    def get_clusters(self):
+    def get_clusters(self, **kwargs):
         """Returns the latest set of clusters after convergence.
         """
         if not self.is_clustered:
-            self.cluster()
+            self.cluster(**kwargs)
         return ({c: mu[self.t] for c, mu in self.mu.items()})
 
     def __delta_cluster(self):
@@ -69,7 +69,7 @@ class EMCluster:
         assert 0 <= post <= 1
         return (post)
 
-    def cluster(self, sigma_diag=True, regularize=False):
+    def cluster(self, sigma_diag=True, regularize=False, verbose=False):
         """Cluster input data using Expectation Maximization
 
         Parameters
@@ -80,9 +80,15 @@ class EMCluster:
 
         regularize : bool, default=False.  If True, add a small positive number
             to the diagonal of each variance-covariance matrix.
+
+        verbose : bool, default=False.  If True, print out loop iteration number
+            and change in cluster centers from previous iteration
         """
         self.t = 0
         while self.__delta_cluster() > self.epsilon or self.t == 0:
+            if verbose:
+                delta = self.__delta_cluster()
+                print("Iteration: {0} - Δ Clusters: {1}".format(self.t, delta))
             self.t += 1
             # Expectation Step
             for i in range(self.k):
