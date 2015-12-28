@@ -11,7 +11,6 @@ from scipy.stats import multivariate_normal as MVN
 
 
 class EMCluster:
-
     def __init__(self, data, k, epsilon=0.001):
         self.data = data
         self.k = k
@@ -19,9 +18,8 @@ class EMCluster:
         self.n = data.shape[0]
         self.d = data.shape[1]
         self.epsilon = epsilon
-        self.mu = {i: [np.random.uniform(np.min(data),
-                                         np.max(data),
-                                         data.shape[1])]
+        self.mu = {i: [np.random.uniform(
+            np.min(data), np.max(data), data.shape[1])]
                    for i in range(k)}
         self.sigma = {i: [np.eye(self.dims[1])] for i in range(k)}
         self.p = {i: [(1 / k)] for i in range(k)}
@@ -34,21 +32,21 @@ class EMCluster:
         """
         if not self.is_clustered:
             self.cluster()
-        return({c: mu[self.t] for c, mu in self.mu.items()})
+        return ({c: mu[self.t] for c, mu in self.mu.items()})
 
-    def error(self):
+    def __delta_cluster(self):
         """Calculate the change in cluster centers from the last iteration.
         Used to determine convergence
         """
         if self.t == 0:
-            return(np.nan)
+            return (np.nan)
         elif self.t == 1:
-            sse = sum([np.linalg.norm(v[0]) ** 2 for k, v in self.mu.items()])
-            return(sse)
+            sse = sum([np.linalg.norm(v[0])**2 for k, v in self.mu.items()])
+            return (sse)
         else:
-            sse = sum([np.linalg.norm(v[-1] - v[-2]) ** 2
+            sse = sum([np.linalg.norm(v[-1] - v[-2])**2
                        for k, v in self.mu.items()])
-            return(sse)
+            return (sse)
 
     def __posterior_prob(self, t, i, j):
         """Calculate the posterior probability of cluster i given data j.  For use
@@ -57,24 +55,19 @@ class EMCluster:
         Parameters
         ----------
 
-        self : EMCluster object
-
         t : int, Loop iteration.
 
         i : int, Cluster identifier.
 
         j : int, Observation x_j.
         """
-        num = MVN.pdf(self.data[j,:],
-                      self.mu[i][t - 1],
+        num = MVN.pdf(self.data[j, :], self.mu[i][t - 1],
                       self.sigma[i][t - 1]) * self.p[i][t - 1]
-        denom = sum([MVN.pdf(self.data[j,:],
-                             self.mu[l][t - 1],
-                             self.sigma[l][t - 1]) * self.p[l][t - 1]
-                     for l in range(self.k)])
+        denom = sum([MVN.pdf(self.data[j, :], self.mu[l][t - 1], self.sigma[l][
+            t - 1]) * self.p[l][t - 1] for l in range(self.k)])
         post = (num / denom)
         assert 0 <= post <= 1
-        return(post)
+        return (post)
 
     def cluster(self, sigma_diag=True, regularize=False):
         """Cluster input data using Expectation Maximization
@@ -89,7 +82,7 @@ class EMCluster:
             to the diagonal of each variance-covariance matrix.
         """
         self.t = 0
-        while self.error() > self.epsilon or self.t == 0:
+        while self.__delta_cluster() > self.epsilon or self.t == 0:
             self.t += 1
             # Expectation Step
             for i in range(self.k):
@@ -100,14 +93,13 @@ class EMCluster:
                 self.w[i].insert(self.t, W)
             # Maximization Step
             for i in range(self.k):
-                mu_num = sum([self.w[i][self.t - 1][j] * self.data[j,:]
+                mu_num = sum([self.w[i][self.t - 1][j] * self.data[j, :]
                               for j in range(self.dims[0])])
                 sum_wij = sum([self.w[i][self.t - 1][j]
                                for j in range(self.dims[0])])
                 mu = (mu_num / sum_wij)
-                sigma_num = sum([self.w[i][self.t - 1][j] *
-                                 np.outer((self.data[j,:] - mu),
-                                          (self.data[j,:] - mu))
+                sigma_num = sum([self.w[i][self.t - 1][j] * np.outer(
+                    (self.data[j, :] - mu), (self.data[j, :] - mu))
                                  for j in range(self.dims[0])])
                 sigma = (sigma_num / sum_wij)
                 # Methods to avoid ill-conditioned variance-covariance matrices
